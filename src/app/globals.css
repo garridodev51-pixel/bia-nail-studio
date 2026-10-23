@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 248 240 251;
+    --foreground: 41 33 45;
+    --primary: 142 53 168;
+    --primary-foreground: 255 252 255;
+    --secondary: 197 138 221;
+    --muted: 248 240 251;
+    --accent: 74 20 90;
+    --radius: 1rem;
+  }
+
+  body {
+    @apply bg-brand-light text-brand-text antialiased;
+  }
+}
+
+button, a, input, select, textarea {
+  @apply transition-all duration-200 ease-out;
+}
+
+:focus-visible {
+  @apply outline-none ring-2 ring-brand-purple ring-offset-2 ring-offset-brand-light;
+}
