@@ -29,7 +29,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       aria-label={dark ? "Usar tema claro" : "Usar tema escuro"}
       title={dark ? "Tema claro" : "Tema escuro"}
       className={cn(
-        "flex size-10 cursor-pointer items-center justify-center rounded-xl text-sidebar-foreground transition-colors hover:bg-secondary",
+        "flex size-10 cursor-pointer items-center justify-center rounded-xl text-primary-dark transition-colors hover:bg-secondary",
         className,
       )}
     >

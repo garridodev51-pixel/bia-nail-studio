@@ -57,7 +57,7 @@ export function DateCalendar({ month, minMonth, maxMonth, availableDates, select
         ))}
         {cells.map((date, i) => {
           if (!date) return <span key={`e${i}`} />;
-          if (loading) return <Skeleton key={date} className="aspect-square rounded-xl" />;
+          if (loading) return <Skeleton key={date} className="aspect-square rounded-xl sm:aspect-auto sm:h-12 lg:h-11" />;
           const available = availableDates.has(date);
           const isSelected = selected === date;
           const isToday = date === today;
@@ -70,7 +70,7 @@ export function DateCalendar({ month, minMonth, maxMonth, availableDates, select
               aria-pressed={isSelected}
               aria-label={`${Number(date.slice(8))}${available ? ", com horários" : ", sem horários"}`}
               className={cn(
-                "relative flex aspect-square cursor-pointer items-center justify-center rounded-xl text-base font-semibold transition-all duration-150",
+                "relative flex aspect-square cursor-pointer items-center sm:aspect-auto sm:h-12 lg:h-11 justify-center rounded-xl text-base font-semibold transition-all duration-150",
                 available && !isSelected && "bg-secondary text-primary-dark hover:bg-accent/50",
                 isSelected && "bg-primary text-primary-foreground shadow-md shadow-primary/30 scale-105",
                 !available && "cursor-default font-normal text-muted-foreground/40",

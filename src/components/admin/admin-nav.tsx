@@ -24,9 +24,10 @@ export function NewAppointmentShortcut() {
   return (
     <Link
       href="/admin/agenda?novo=1"
-      className="flex items-center justify-between gap-3 rounded-2xl bg-card px-4 py-3 shadow-sm shadow-primary/10 transition-transform hover:-translate-y-0.5"
+      title="Novo agendamento"
+      className="flex items-center justify-center gap-3 rounded-2xl bg-card p-2.5 shadow-sm shadow-black/10 transition-transform hover:-translate-y-0.5 lg:justify-between lg:px-4 lg:py-3"
     >
-      <span className="text-sm font-semibold leading-tight text-foreground">
+      <span className="sr-only text-sm font-semibold leading-tight text-foreground lg:not-sr-only">
         Novo
         <br />
         agendamento
@@ -48,15 +49,15 @@ export function AdminSidebar() {
           <Link
             key={href}
             href={href}
+            title={long}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition-all",
-              active
-                ? "bg-brand-gradient text-white shadow-md shadow-brand-to/30"
-                : "text-sidebar-foreground/85 hover:bg-card/60 hover:text-sidebar-foreground",
+              "flex h-11 items-center justify-center gap-3 rounded-xl text-sm font-semibold text-sidebar-foreground transition-all lg:justify-start lg:px-3",
+              active ? "bg-sidebar-active shadow-sm" : "opacity-85 hover:bg-sidebar-active hover:opacity-100",
             )}
           >
-            <Icon className="size-5" aria-hidden /> {long}
+            <Icon className="size-5 shrink-0" aria-hidden />
+            <span className="sr-only lg:not-sr-only">{long}</span>
           </Link>
         );
       })}
@@ -99,7 +100,7 @@ export function AdminBottomNav() {
   const pathname = usePathname();
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       aria-label="Menu do painel"
     >
       {ITEMS.map(({ href, label, icon: Icon }) => {
@@ -130,13 +131,17 @@ export function SignOutButton({ withLabel = false }: { withLabel?: boolean }) {
     <form action={signOut}>
       <button
         type="submit"
+        title="Sair"
         className={cn(
-          "flex cursor-pointer items-center gap-3 rounded-xl text-sidebar-foreground/80 transition-colors hover:bg-card/60 hover:text-sidebar-foreground",
-          withLabel ? "h-11 w-full px-3 text-sm font-semibold" : "size-10 justify-center",
+          "flex cursor-pointer items-center gap-3 rounded-xl transition-colors",
+          withLabel
+            ? "h-11 w-full justify-center text-sm font-semibold text-sidebar-foreground opacity-85 hover:bg-sidebar-active hover:opacity-100 lg:justify-start lg:px-3"
+            : "size-10 justify-center text-primary-dark hover:bg-secondary",
         )}
         aria-label="Sair"
       >
-        <LogOut className="size-5" aria-hidden /> {withLabel && "Sair"}
+        <LogOut className="size-5 shrink-0" aria-hidden />
+        {withLabel && <span className="sr-only lg:not-sr-only">Sair</span>}
       </button>
     </form>
   );

@@ -18,13 +18,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const { erro, cadastro } = await searchParams;
   const signingUp = cadastro !== undefined;
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center gap-8 px-5 py-10">
+    <div className="min-h-dvh bg-hero">
+    <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center gap-8 px-5 py-10 md:max-w-md">
       <div className="text-center">
         <BrandName className="text-2xl" />
-        <p className="mt-2 text-muted-foreground">Painel da profissional</p>
+        <p className="mt-2 text-xs font-semibold uppercase tracking-[0.25em] text-primary-dark/70">Painel administrativo</p>
       </div>
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-6 md:p-8">
           {signingUp ? (
             <SignUpForm />
           ) : (
@@ -41,9 +42,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </p>
         </CardContent>
       </Card>
-      <Link href="/" className="text-center text-sm text-muted-foreground hover:text-primary">
+      <Link href="/" className="text-center text-sm text-primary-dark/80 hover:text-primary">
         Voltar para o site
       </Link>
     </main>
+    </div>
   );
 }

@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
 
-export type PublicService = Pick<Tables<"services">, "id" | "name" | "description" | "price_cents">;
+export type PublicService = Pick<Tables<"services">, "id" | "name" | "description" | "price_cents" | "duration_minutes">;
 export type Studio = Pick<
   Tables<"professionals">,
   "id" | "slug" | "display_name" | "brand_name" | "welcome_message" | "booking_window_days" | "is_primary"
@@ -29,7 +29,7 @@ export async function getActiveServices(professionalId: string): Promise<PublicS
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("services")
-    .select("id, name, description, price_cents")
+    .select("id, name, description, price_cents, duration_minutes")
     .eq("professional_id", professionalId)
     .eq("is_active", true)
     .order("sort_order")

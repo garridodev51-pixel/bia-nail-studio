@@ -33,7 +33,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const bell = (
     <Link
       href="/admin#pendentes"
-      className="relative flex size-10 items-center justify-center rounded-xl text-sidebar-foreground transition-colors hover:bg-secondary"
+      className="relative flex size-10 items-center justify-center rounded-xl text-primary-dark transition-colors hover:bg-secondary"
       aria-label={pending ? `${pending} reservas pendentes` : "Nenhuma reserva pendente"}
     >
       <Bell className="size-5" />
@@ -46,13 +46,25 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   );
 
   return (
-    <div className="min-h-dvh bg-background lg:grid lg:grid-cols-[248px_1fr]">
-      <aside className="sticky top-0 hidden h-dvh flex-col gap-7 overflow-y-auto bg-sidebar px-5 py-6 lg:flex">
-        <BrandName name={studio.displayName || undefined} href="/admin" className="text-base" />
+    <div className="min-h-dvh bg-background md:grid md:grid-cols-[76px_1fr] lg:grid-cols-[248px_1fr]">
+      {/* Tablet: trilho só com ícones · Notebook: menu completo · Celular: barra inferior */}
+      <aside className="sticky top-0 hidden h-dvh flex-col gap-6 overflow-y-auto bg-sidebar px-3 py-6 text-sidebar-foreground md:flex lg:gap-7 lg:px-5">
+        <span className="hidden lg:block">
+          <BrandName name={studio.displayName || undefined} href="/admin" className="text-base text-sidebar-foreground" />
+        </span>
+        <Link
+          href="/admin"
+          className="mx-auto flex size-11 items-center justify-center rounded-full border border-sidebar-foreground/40 font-display text-lg font-semibold lg:hidden"
+          aria-label={`${studio.displayName || "Painel"} — início`}
+        >
+          {(studio.displayName || "N").trim().charAt(0).toUpperCase()}
+        </Link>
         <NewAppointmentShortcut />
         <AdminSidebar />
         <div className="mt-auto flex flex-col gap-3">
-          <BookingLinkCard path={studio.publicPath} />
+          <div className="hidden lg:block">
+            <BookingLinkCard path={studio.publicPath} />
+          </div>
           <SignOutButton withLabel />
         </div>
       </aside>
@@ -74,12 +86,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className="ml-auto flex items-center gap-1">
             {bell}
             <ThemeToggle />
-            <span className="lg:hidden">
+            <span className="md:hidden">
               <SignOutButton />
             </span>
           </div>
         </header>
-        <main className="w-full flex-1 px-4 pb-28 pt-6 sm:px-6 lg:pb-10">{children}</main>
+        <main className="w-full flex-1 px-4 pb-28 pt-6 sm:px-6 md:pb-10 lg:px-8">{children}</main>
       </div>
       <AdminBottomNav />
       <LiveBookings professionalId={professionalId} />

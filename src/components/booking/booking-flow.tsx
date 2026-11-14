@@ -12,7 +12,6 @@ import {
   Clock,
   Home,
   MessageSquarePlus,
-  Sparkles,
   User,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -25,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BrandName } from "@/components/brand/brand-name";
 import { DateCalendar } from "./date-calendar";
 import { ServiceCardContent, serviceCardClass } from "./service-card";
+import { serviceIcon } from "./service-icon";
 import {
   checkSlotAvailable,
   createBooking,
@@ -35,12 +35,20 @@ import {
 } from "@/app/agendar/actions";
 import type { PublicService } from "@/lib/data/public";
 import { addDays, addMonths, formatDateLong, startOfMonth, todayKey, toDateKey, toTimeKey, type DateKey } from "@/lib/datetime";
-import { formatPhone, formatPrice, maskPhoneInput, normalizePhone } from "@/lib/format";
+import { formatDuration, formatPhone, formatPrice, maskPhoneInput, normalizePhone } from "@/lib/format";
 import { SLOT_TAKEN_MESSAGE } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 
 type Step = "service" | "datetime" | "details" | "confirm" | "success";
 const STEP_ORDER: Step[] = ["service", "datetime", "details", "confirm"];
+/** Largura do conteúdo por etapa: listas e calendário aproveitam tablet e notebook; formulários ficam estreitos. */
+const STEP_WIDTH: Record<Step, string> = {
+  service: "max-w-xl md:max-w-3xl lg:max-w-4xl",
+  datetime: "max-w-xl md:max-w-2xl lg:max-w-5xl",
+  details: "max-w-xl",
+  confirm: "max-w-xl",
+  success: "max-w-xl",
+};
 const STEP_TITLES: Record<Step, string> = {
   service: "Escolha o serviço",
   datetime: "Escolha o dia e o horário",
@@ -105,7 +113,7 @@ export function BookingFlow({ professionalId, basePath, services, initialService
 
   return (
     <StudioContext.Provider value={{ professionalId, basePath, displayName }}>
-    <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-5 pb-10 pt-4">
+    <div className={cn("mx-auto flex min-h-dvh w-full flex-col px-4 pb-10 pt-4 transition-[max-width] duration-300 sm:px-6 lg:pt-6", STEP_WIDTH[step])}>
       <header className="flex items-center justify-between gap-2">
         {step !== "success" && stepIndex > 0 ? (
           <Button variant="ghost" size="sm" onClick={back} className="-ml-2 h-11 px-3 text-base">
@@ -141,7 +149,7 @@ export function BookingFlow({ professionalId, basePath, services, initialService
         ref={headingRef}
         tabIndex={-1}
         className={cn(
-          "font-display text-3xl font-semibold text-primary-dark outline-none",
+          "font-display text-3xl font-semibold text-primary-dark outline-none lg:text-4xl",
           step === "success" ? "mt-10 text-center" : "mt-1",
         )}
       >
@@ -236,16 +244,22 @@ function ServiceStep({
     return <p className="rounded-2xl bg-card p-6 text-center text-muted-foreground">Nenhum serviço disponível no momento.</p>;
   }
   return (
-    <ul className="flex flex-col gap-3">
+    <ul className="grid gap-3 md:grid-cols-2 md:gap-4">
       {services.map((s) => (
-        <li key={s.id}>
+        <li key={s.id} className="flex">
           <button
             type="button"
             className={cn(serviceCardClass, selectedId === s.id && "border-primary")}
             onClick={() => onSelect(s)}
             aria-pressed={selectedId === s.id}
           >
-            <ServiceCardContent name={s.name} description={s.description} priceCents={s.price_cents} selected={selectedId === s.id} />
+            <ServiceCardContent
+              name={s.name}
+              description={s.description}
+              priceCents={s.price_cents}
+              durationMinutes={s.duration_minutes}
+              selected={selectedId === s.id}
+            />
           </button>
         </li>
       ))}
@@ -277,6 +291,7 @@ function DateTimeStep({
   onChangeService: () => void;
 }) {
   const { professionalId } = useContext(StudioContext);
+  const ServiceIcon = serviceIcon(service.name);
   const today = todayKey();
   const minMonth = startOfMonth(today);
   const maxMonth = startOfMonth(addDays(today, bookingWindowDays));
@@ -343,10 +358,13 @@ function DateTimeStep({
         className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl bg-secondary px-4 py-3 text-left transition-colors hover:bg-accent/40"
       >
         <span className="flex items-center gap-3">
-          <Sparkles className="size-5 text-primary" aria-hidden />
+          <ServiceIcon className="size-5 text-primary" aria-hidden />
           <span>
             <span className="block font-semibold text-primary-dark">{service.name}</span>
-            <span className="text-sm text-primary">{formatPrice(service.price_cents)}</span>
+            <span className="text-sm text-primary">
+              {formatPrice(service.price_cents)}
+              {formatDuration(service.duration_minutes) && ` · ${formatDuration(service.duration_minutes)}`}
+            </span>
           </span>
         </span>
         <span className="text-sm font-semibold text-primary underline-offset-4">Trocar</span>
@@ -359,6 +377,9 @@ function DateTimeStep({
         </Alert>
       )}
 
+      {/* Notebook: calendário à esquerda, horários à direita */}
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start lg:gap-8">
+      <div className="flex flex-col gap-5">
       {datesError ? (
         <Alert variant="destructive">
           <AlertCircle aria-hidden />
@@ -389,14 +410,22 @@ function DateTimeStep({
           )}
         </>
       )}
+      </div>
+
+      {!date && (
+        <p className="hidden h-full min-h-48 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-card/50 p-6 text-center text-muted-foreground lg:flex">
+          <CalendarDays className="size-8 text-accent" aria-hidden />
+          Escolha um dia no calendário para ver os horários disponíveis.
+        </p>
+      )}
 
       {date && (
-        <section aria-labelledby="horarios" className="animate-in fade-in slide-in-from-bottom-2">
+        <section aria-labelledby="horarios" className="animate-in fade-in slide-in-from-bottom-2 lg:rounded-2xl lg:bg-card lg:p-5 lg:shadow-sm lg:shadow-primary/5">
           <h2 id="horarios" className="mb-3 flex items-center gap-2 text-lg font-semibold first-letter:uppercase text-primary-dark">
             <Clock className="size-5 text-primary" aria-hidden /> {formatDateLong(date)}
           </h2>
           {slotsLoading ? (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-3">
               {Array.from({ length: 6 }, (_, i) => (
                 <Skeleton key={i} className="h-14" />
               ))}
@@ -416,7 +445,7 @@ function DateTimeStep({
               Os horários deste dia acabaram de ser preenchidos. Escolha outro dia.
             </p>
           ) : (
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-3">
               {slots?.map((s) => (
                 <button
                   key={s.startsAt}
@@ -437,6 +466,7 @@ function DateTimeStep({
           )}
         </section>
       )}
+      </div>
     </div>
   );
 }

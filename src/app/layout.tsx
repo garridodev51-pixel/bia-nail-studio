@@ -1,10 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
-const playfair = Playfair_Display({ variable: "--font-playfair", subsets: ["latin"], weight: ["500", "600", "700"] });
+// Títulos: serifada clássica e delicada · Textos: sem serifa limpa, legível em telas pequenas
+const manrope = Manrope({ variable: "--font-sans-base", subsets: ["latin"], display: "swap" });
+const cormorant = Cormorant_Garamond({
+  variable: "--font-display-base",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: { default: "BEATRIZ ABREU · Agendamento", template: "%s · BEATRIZ ABREU" },
@@ -12,7 +18,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#8E35A8",
+  themeColor: "#A35C5B",
   width: "device-width",
   initialScale: 1,
 };
@@ -28,7 +34,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           }}
         />
       </head>
-      <body className={`${inter.variable} ${playfair.variable}`}>
+      <body className={`${manrope.variable} ${cormorant.variable}`}>
         {children}
         <Toaster />
       </body>

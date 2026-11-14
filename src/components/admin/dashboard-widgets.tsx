@@ -30,33 +30,33 @@ export function NailIllustration({ className }: { className?: string }) {
           <stop offset="1" stopColor="var(--brand-to)" />
         </linearGradient>
         <linearGradient id="ni-soft" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor="#f6c7ea" />
-          <stop offset="1" stopColor="#d9a6f0" />
+          <stop offset="0" stopColor="#f3d5cf" />
+          <stop offset="1" stopColor="#e2b3ab" />
         </linearGradient>
       </defs>
       {/* cartões flutuantes */}
       <g className="origin-center animate-[float_6s_ease-in-out_infinite]">
         <rect x="18" y="20" width="30" height="30" rx="7" fill="#fff" opacity=".9" transform="rotate(-10 33 35)" />
-        <rect x="24" y="30" width="18" height="3" rx="1.5" fill="#e05bbf" transform="rotate(-10 33 35)" />
-        <rect x="24" y="37" width="12" height="3" rx="1.5" fill="#c58add" transform="rotate(-10 33 35)" />
+        <rect x="24" y="30" width="18" height="3" rx="1.5" fill="#b06a68" transform="rotate(-10 33 35)" />
+        <rect x="24" y="37" width="12" height="3" rx="1.5" fill="#d9a5a0" transform="rotate(-10 33 35)" />
       </g>
       <rect x="58" y="62" width="26" height="26" rx="7" fill="url(#ni-bottle)" transform="rotate(8 71 75)" />
       <rect x="64" y="70" width="14" height="3" rx="1.5" fill="#fff" transform="rotate(8 71 75)" />
       <rect x="64" y="76" width="9" height="3" rx="1.5" fill="#fff" opacity=".8" transform="rotate(8 71 75)" />
-      <rect x="28" y="98" width="22" height="22" rx="6" fill="#efe1f7" transform="rotate(-6 39 109)" />
-      <rect x="100" y="10" width="22" height="26" rx="6" fill="#f9a8d4" transform="rotate(12 111 23)" />
+      <rect x="28" y="98" width="22" height="22" rx="6" fill="#f3e1de" transform="rotate(-6 39 109)" />
+      <rect x="100" y="10" width="22" height="26" rx="6" fill="#e9c4bc" transform="rotate(12 111 23)" />
       <rect x="105" y="17" width="12" height="3" rx="1.5" fill="#fff" transform="rotate(12 111 23)" />
       {/* esmalte */}
-      <rect x="150" y="18" width="22" height="44" rx="6" fill="#4a145a" />
-      <rect x="146" y="58" width="30" height="8" rx="3" fill="#2b0b35" />
+      <rect x="150" y="18" width="22" height="44" rx="6" fill="#6e3b3c" />
+      <rect x="146" y="58" width="30" height="8" rx="3" fill="#4a2627" />
       <path d="M140 66h42a10 10 0 0 1 10 10v44a14 14 0 0 1-14 14h-34a14 14 0 0 1-14-14V76a10 10 0 0 1 10-10Z" fill="url(#ni-bottle)" />
       <path d="M146 76h6v44h-6z" fill="#fff" opacity=".35" rx="3" />
       <rect x="149" y="96" width="24" height="18" rx="4" fill="#fff" opacity=".9" />
-      <path d="M156 101l4 8 4-8" stroke="#8e35a8" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M156 101l4 8 4-8" stroke="#a35c5b" strokeWidth="2" fill="none" strokeLinecap="round" />
       {/* gota e brilhos */}
       <path d="M200 92c0 5-3 8-6 8s-6-3-6-8 6-12 6-12 6 7 6 12Z" fill="url(#ni-soft)" />
-      <path d="M205 30l2 6 6 2-6 2-2 6-2-6-6-2 6-2Z" fill="#e05bbf" />
-      <path d="M128 112l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5Z" fill="#c58add" />
+      <path d="M205 30l2 6 6 2-6 2-2 6-2-6-6-2 6-2Z" fill="#b06a68" />
+      <path d="M128 112l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5Z" fill="#d9a5a0" />
     </svg>
   );
 }

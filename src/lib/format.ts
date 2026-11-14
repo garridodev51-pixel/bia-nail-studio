@@ -41,3 +41,12 @@ export function maskPhoneInput(value: string) {
   if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
+
+/** Duração legível, ex.: 150 → "2h 30min"; 60 → "1h"; 45 → "45min". */
+export function formatDuration(minutes: number | null | undefined) {
+  if (!minutes || minutes <= 0) return null;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (!h) return `${m}min`;
+  return m ? `${h}h ${String(m).padStart(2, "0")}min` : `${h}h`;
+}
