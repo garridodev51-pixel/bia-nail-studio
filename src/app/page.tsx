@@ -1,9 +1,7 @@
-import { BookingFlow } from "@/components/booking/BookingFlow";
+import { StudioHomePage } from "@/components/booking/studio-pages";
+
+export const dynamic = "force-dynamic";
 
 export default function HomePage() {
-  return (
-    <main className="min-h-screen bg-brand-light">
-      <BookingFlow />
-    </main>
-  );
+  return <StudioHomePage />;
 }
