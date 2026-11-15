@@ -1,8 +1,10 @@
 "use server";
 
 import { after } from "next/server";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { bookingNotification, isPushConfigured, sendPush } from "@/lib/push";
+import { bookingNotification, isPushConfigured, sendPush, type PushTarget } from "@/lib/push";
+import { bookingWhatsAppText, sendWhatsApp, type WhatsAppTarget } from "@/lib/whatsapp";
 import { addDays, isDateKey, todayKey, toDateKey } from "@/lib/datetime";
 import { dbErrorCode, dbErrorMessage, GENERIC_ERROR, type ActionResult } from "@/lib/errors";
 import { fieldErrors, isoInstantSchema, publicBookingSchema, uuidSchema, type PublicBookingInput } from "@/lib/validation";
@@ -108,27 +110,88 @@ export async function createBooking(input: PublicBookingInput): Promise<ActionRe
 }
 
 
+type BookingAlerts = {
+  client_name: string;
+  client_phone: string;
+  service_name: string;
+  starts_at: string;
+  push: PushTarget[];
+  whatsapp: WhatsAppTarget | null;
+};
+
 /**
- * Avisa no celular/PC da dona do estúdio. Os destinos são reservados (uma
- * única vez) antes de responder à cliente; o envio acontece depois da resposta,
- * para não atrasar a confirmação. Qualquer falha aqui não afeta a reserva.
+ * Avisa a dona do estúdio: notificação no celular/PC (push) e mensagem no
+ * WhatsApp. Os destinos são reservados (uma única vez) antes de responder à
+ * cliente; o envio acontece depois da resposta, para não atrasar a
+ * confirmação. Qualquer falha aqui não afeta a reserva.
  */
 async function notifyOwner(supabase: Awaited<ReturnType<typeof createClient>>, appointmentId: string) {
-  if (!isPushConfigured()) return;
   try {
-    const { data: targets, error } = await supabase.rpc("claim_booking_notification", { p_appointment_id: appointmentId });
+    const { data, error } = await supabase.rpc("claim_new_booking_alerts", { p_appointment_id: appointmentId });
     if (error) {
-      console.error("claim_booking_notification", error);
+      // Banco ainda sem a função nova (migration do WhatsApp não aplicada): mantém só o push.
+      if (error.code === "PGRST202" || error.code === "42883") return notifyOwnerPushOnly(supabase, appointmentId);
+      console.error("claim_new_booking_alerts", error);
       return;
     }
-    if (!targets?.length) return;
-    const first = targets[0];
-    const payload = bookingNotification({ clientName: first.client_name, serviceName: first.service_name, startsAt: first.starts_at });
+    const alerts = data as BookingAlerts | null;
+    if (!alerts) return;
+
+    const panelUrl = await siteUrl("/admin#pendentes");
     after(async () => {
-      const { gone } = await sendPush(targets, payload);
-      if (gone.length) await supabase.rpc("prune_push_subscriptions", { p_appointment_id: appointmentId, p_endpoints: gone });
+      await Promise.all([
+        (async () => {
+          if (!alerts.push.length || !isPushConfigured()) return;
+          const payload = bookingNotification({ clientName: alerts.client_name, serviceName: alerts.service_name, startsAt: alerts.starts_at });
+          const { gone } = await sendPush(alerts.push, payload);
+          if (gone.length) await supabase.rpc("prune_push_subscriptions", { p_appointment_id: appointmentId, p_endpoints: gone });
+        })(),
+        (async () => {
+          if (!alerts.whatsapp) return;
+          await sendWhatsApp(
+            alerts.whatsapp,
+            bookingWhatsAppText({
+              clientName: alerts.client_name,
+              clientPhone: alerts.client_phone,
+              serviceName: alerts.service_name,
+              startsAt: alerts.starts_at,
+              panelUrl,
+            }),
+          );
+        })(),
+      ]);
     });
   } catch (e) {
     console.error("notifyOwner", e);
+  }
+}
+
+/** Caminho antigo (só push), usado enquanto a migration do WhatsApp não foi aplicada. */
+async function notifyOwnerPushOnly(supabase: Awaited<ReturnType<typeof createClient>>, appointmentId: string) {
+  if (!isPushConfigured()) return;
+  const { data: targets, error } = await supabase.rpc("claim_booking_notification", { p_appointment_id: appointmentId });
+  if (error) {
+    console.error("claim_booking_notification", error);
+    return;
+  }
+  if (!targets?.length) return;
+  const first = targets[0];
+  const payload = bookingNotification({ clientName: first.client_name, serviceName: first.service_name, startsAt: first.starts_at });
+  after(async () => {
+    const { gone } = await sendPush(targets, payload);
+    if (gone.length) await supabase.rpc("prune_push_subscriptions", { p_appointment_id: appointmentId, p_endpoints: gone });
+  });
+}
+
+/** Endereço absoluto do site a partir do pedido atual (funciona em qualquer domínio). */
+async function siteUrl(path: string) {
+  try {
+    const h = await headers();
+    const host = h.get("x-forwarded-host") ?? h.get("host");
+    if (!host) return undefined;
+    const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+    return `${proto}://${host}${path}`;
+  } catch {
+    return undefined;
   }
 }

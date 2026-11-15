@@ -1,8 +1,8 @@
 // Projeto Supabase de produção. URL e chave publicável são públicas por natureza
 // (vão para o navegador de qualquer forma); servem de padrão quando as variáveis
 // de ambiente não foram configuradas na hospedagem. Nunca coloque a service_role aqui.
-const DEFAULT_SUPABASE_URL = "https://avifwwaeqfnfedycmolw.supabase.co";
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_iU0OawzYA_qIp3NdKToLDA_cR6uXXuj";
+const DEFAULT_SUPABASE_URL = "https://xseqhwweayaupwpkqqmg.supabase.co";
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_c4p3QuKwKz2DXan1-h9riw_r_FPee0U";
 
 export function getSupabaseEnv() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;

@@ -6,15 +6,17 @@ import { BlockButton } from "@/components/admin/appointment-dialogs";
 import { DeleteBlockButton } from "@/components/admin/agenda-client";
 import { BookingRulesForm, BusinessHoursForm, SlotsManager } from "@/components/admin/settings-forms";
 import { NotificationsCard } from "@/components/admin/notifications-card";
+import { WhatsAppCard } from "@/components/admin/whatsapp-card";
 import { requireAdmin } from "@/lib/auth";
 import { getVapidPublicKey, isPushConfigured } from "@/lib/push";
+import { isWhatsAppConfigured } from "@/lib/whatsapp";
 import { formatDateShort, toDateKey, toTimeKey } from "@/lib/datetime";
 
 export const metadata = { title: "Configurações" };
 
 export default async function ConfiguracoesPage() {
   const { supabase, professionalId } = await requireAdmin();
-  const [hoursRes, slotsRes, blocksRes, proRes] = await Promise.all([
+  const [hoursRes, slotsRes, blocksRes, proRes, waRes] = await Promise.all([
     supabase.from("business_hours").select("weekday, is_open, open_time, close_time").eq("professional_id", professionalId).order("weekday"),
     supabase.from("available_slots").select("id, weekday, start_time").order("start_time"),
     supabase.from("schedule_blocks").select("id, starts_at, ends_at, all_day, reason").gt("ends_at", new Date().toISOString()).order("starts_at"),
@@ -23,7 +25,10 @@ export default async function ConfiguracoesPage() {
       .select("min_advance_minutes, booking_window_days, max_active_bookings_per_phone, welcome_message")
       .eq("id", professionalId)
       .maybeSingle(),
+    // Tabela criada pela migration do WhatsApp; se ainda não existir, o cartão aparece vazio.
+    supabase.from("whatsapp_alerts").select("phone, enabled").maybeSingle(),
   ]);
+  const whatsapp = waRes.data ? { phone: waRes.data.phone, enabled: waRes.data.enabled } : null;
 
   if (hoursRes.error || slotsRes.error || blocksRes.error || proRes.error) {
     return <Alert variant="destructive">Não foi possível carregar as configurações.</Alert>;
@@ -44,6 +49,16 @@ export default async function ConfiguracoesPage() {
           </CardHeader>
           <CardContent>
             <NotificationsCard vapidPublicKey={isPushConfigured() ? getVapidPublicKey() : ""} />
+          </CardContent>
+        </Card>
+
+        <Card id="whatsapp">
+          <CardHeader>
+            <CardTitle>Avisos no WhatsApp</CardTitle>
+            <CardDescription>Receba &quot;Novo agendamento&quot; no seu WhatsApp, com os dados da cliente, assim que ela agendar.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <WhatsAppCard saved={whatsapp} serverReady={isWhatsAppConfigured()} />
           </CardContent>
         </Card>
 

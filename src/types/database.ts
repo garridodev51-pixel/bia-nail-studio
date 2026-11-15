@@ -192,6 +192,17 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      whatsapp_alerts: {
+        Row: {
+          professional_id: string;
+          phone: string;
+          enabled: boolean;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -204,6 +215,9 @@ export type Database = {
         Args: { p_appointment_id: string };
         Returns: { endpoint: string; p256dh: string; auth: string; client_name: string; service_name: string; starts_at: string }[];
       };
+      save_whatsapp_alert: { Args: { p_phone: string; p_enabled: boolean }; Returns: undefined };
+      delete_whatsapp_alert: { Args: Record<string, never>; Returns: undefined };
+      claim_new_booking_alerts: { Args: { p_appointment_id: string }; Returns: unknown };
       prune_push_subscriptions: { Args: { p_appointment_id: string; p_endpoints: string[] }; Returns: undefined };
       is_admin: { Args: Record<string, never>; Returns: boolean };
       current_professional_id: { Args: Record<string, never>; Returns: string | null };

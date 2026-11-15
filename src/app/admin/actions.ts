@@ -16,6 +16,8 @@ import {
   uuidSchema,
 } from "@/lib/validation";
 import { isPushConfigured, sendPush } from "@/lib/push";
+import { sendWhatsApp } from "@/lib/whatsapp";
+import { normalizePhone } from "@/lib/format";
 import type { AppointmentStatus } from "@/types/database";
 
 const NOT_ALLOWED = { ok: false as const, error: "Sua sessão expirou. Entre novamente." };
@@ -463,4 +465,47 @@ export async function sendTestNotificationAction(): Promise<ActionResult<{ sent:
   if (gone.length) await admin.supabase.from("push_subscriptions").delete().in("endpoint", gone);
   if (!sent) return { ok: false, error: "Não foi possível enviar o teste. Ative as notificações de novo neste aparelho." };
   return { ok: true, data: { sent } };
+}
+
+/* -------------------------------- WhatsApp -------------------------------- */
+
+const whatsappSchema = z.object({ phone: z.string().trim(), enabled: z.boolean() });
+
+/** Telefone brasileiro com DDD → "55" + DDD + número. */
+function toWhatsAppPhone(value: string) {
+  const digits = normalizePhone(value);
+  return digits ? `55${digits}` : null;
+}
+
+export async function saveWhatsAppAction(input: z.input<typeof whatsappSchema>): Promise<ActionResult> {
+  const admin = await getAdminOrNull();
+  if (!admin) return NOT_ALLOWED;
+  const parsed = whatsappSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+  const phone = toWhatsAppPhone(parsed.data.phone);
+  if (!phone) return { ok: false, error: "Digite o WhatsApp com DDD.", fieldErrors: { phone: "Ex.: (11) 91234-5678" } };
+  const { error } = await admin.supabase.rpc("save_whatsapp_alert", { p_phone: phone, p_enabled: parsed.data.enabled });
+  if (error) return fail(error, "Não foi possível salvar o WhatsApp.");
+  revalidatePath("/admin/configuracoes");
+  return { ok: true, data: undefined };
+}
+
+export async function deleteWhatsAppAction(): Promise<ActionResult> {
+  const admin = await getAdminOrNull();
+  if (!admin) return NOT_ALLOWED;
+  const { error } = await admin.supabase.rpc("delete_whatsapp_alert");
+  if (error) return fail(error, "Não foi possível remover o WhatsApp.");
+  revalidatePath("/admin/configuracoes");
+  return { ok: true, data: undefined };
+}
+
+/** Manda uma mensagem de teste para o WhatsApp salvo desta conta. */
+export async function sendTestWhatsAppAction(): Promise<ActionResult> {
+  const admin = await getAdminOrNull();
+  if (!admin) return NOT_ALLOWED;
+  const { data, error } = await admin.supabase.from("whatsapp_alerts").select("phone").maybeSingle();
+  if (error) return fail(error);
+  if (!data) return { ok: false, error: "Salve o seu número primeiro." };
+  const res = await sendWhatsApp(data, "✅ *WhatsApp conectado!*\n\nÉ por aqui que você vai receber os novos agendamentos.");
+  return res.ok ? { ok: true, data: undefined } : { ok: false, error: res.error ?? GENERIC_ERROR };
 }
